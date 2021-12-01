@@ -6,10 +6,25 @@ canvas.width = taille;
 canvas.height = taille;
 var nbr = 1;
 var lettre = "c";
-var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7"
+
+
+//var sudoku = getGrille(2);
+var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7";
 var tabSudoku = new Array(9);
 var tempCoordx = null;
 var tempCoordy = null;
+
+function getGrille(nbr){
+    var xhr = new XMLHttpRequest();
+    var json = xhr.responseText;
+    xhr.open("POST", "GetGrilles.php", true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(nbr);
+    var grille = JSON.parse(json);
+    var sudoku = grille["grille"];
+    return sudoku;
+}
+
 for (var i = 0; i < 9; i++)
 {
  tabSudoku[i] = new Array(9);
@@ -55,21 +70,18 @@ for (i = 0; i < 9; i++) {
     } else {
         document.getElementById(caracter).innerHTML = sudoku.charAt(cpt);
     }
-    
-    
     cpt++;
 }
 var c = document.getElementById("canvas");
 c.onclick = showCoords;
 
-//fonction qui vérifie la règle de base sudoku 
+//fonction qui vérifie la règle de base sudoku
 function verifRB(){
     for(let i=0; i <9; i++){
         var erreurLigne = verifLigne(i);
         var erreurColonne = verifColonne(i);
         var erreurBloc = verifBloc(i);
     }
-
 }
 
 function verifLigne(num){
@@ -132,4 +144,6 @@ function showCoords(event) {
     tempCoordx = x;
     tempCoordy =y;
   }
+
 }
+
