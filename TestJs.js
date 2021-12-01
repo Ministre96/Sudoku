@@ -8,24 +8,26 @@ var nbr = 1;
 var lettre = "c";
 var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7"
 var tabSudoku = new Array(9);
+var tempCoordx = null;
+var tempCoordy = null;
 for (var i = 0; i < 9; i++)
 {
  tabSudoku[i] = new Array(9);
 }
-for (i = 1; i < 9; i++) {
+for (i = 0; i < 10; i++) {
     ctx.lineWidth = 1.0;
     if (i % 3 == 0) {
-        ctx.lineWidth = 3.0;
+        ctx.lineWidth = 2.0;
     }
     ctx.beginPath();
     ctx.moveTo((i * taille / 9), 0)
     ctx.lineTo((i * taille / 9), taille);
     ctx.stroke();
 }
-for (i = 1; i < 9; i++) {
+for (i = 0; i < 10; i++) {
     ctx.lineWidth = 1.0;
     if (i % 3 == 0) {
-        ctx.lineWidth = 3.0;
+        ctx.lineWidth = 2.0;
     }
     ctx.beginPath();
     ctx.moveTo(0, (i * taille / 9))
@@ -57,6 +59,9 @@ for (i = 0; i < 9; i++) {
     
     cpt++;
 }
+var c = document.getElementById("canvas");
+c.onclick = showCoords;
+
 //fonction qui vérifie la règle de base sudoku 
 function verifRB(){
     for(let i=0; i <9; i++){
@@ -106,4 +111,25 @@ function verifBloc(num){
     }
     return test;
 }
+function showCoords(event) {
+    var x = event.pageX;
+    var y = event.pageY;
+    x =Number.parseInt(((x-10)/50));
+    y =Number.parseInt(((y-10)/50));
+    var coords = "X coords: " + x + ", Y coords: " + y;
+    var ctx = canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.strokeStyle = "#1F9AC4";
+    ctx.fillStyle = "#7FD3EF";
+    ctx.lineWidth =1.0;
+    ctx.fillRect((x *50), (y *50),50, 50);
+    ctx.strokeRect((x *50), (y *50),50, 50);
+    ctx.strokeStyle = "black";
+    ctx.fillStyle = null;
+    ctx.clearRect((tempCoordx *50), (tempCoordy *50),50, 50);
+    ctx.strokeRect((tempCoordx *50), (tempCoordy *50),50, 50);
+    document.getElementById("demo").innerHTML = coords;
+    tempCoordx = x;
+    tempCoordy =y;
+  }
 }
