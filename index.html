@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="sudoku">
+        <canvas id="canvas" ></canvas>
+        <input id="btn1" onclick="setNumber(1)" type="image" src="ressources/btn1.png" style="border:1px solid black; position: absolute; top: 50px; left: 500px;"  width="25" height="30">
+        <input id="btn2" onclick="setNumber(2)" type="image" src="ressources/btn2.png" style="border:1px solid black; position: absolute; top: 50px; left: 540px;" width="25" height="30">
+        <input id="btn3" onclick="setNumber(3)" type="image"  src="ressources/btn3.png" style="border:1px solid black; position: absolute; top: 50px; left: 580px;"width="25" height="30">
+        <input id="btn4" onclick="setNumber(4)" type="image" src="ressources/btn4.png" style="border:1px solid black; position: absolute; top: 90px; left: 500px;" width="25" height="30">
+        <input id="btn5" onclick="setNumber(5)" type="image" src="ressources/btn5.png" style="border:1px solid black; position: absolute; top: 90px; left: 540px;" width="25" height="30">
+        <input id="btn6" onclick="setNumber(6)" type="image"  src="ressources/btn6.png" style="border:1px solid black; position: absolute; top: 90px; left: 580px;" width="25" height="30">
+        <input id="btn7" onclick="setNumber(7)" type="image"  src="ressources/btn7.png" style="border:1px solid black; position: absolute; top: 130px; left: 500px;" width="25" height="30">
+        <input id="btn8" onclick="setNumber(8)" type="image"  src="ressources/btn8.png" style="border:1px solid black; position: absolute; top: 130px; left: 540px;" width="25" height="30">
+        <input id="btn9" onclick="setNumber(9)" type="image"  src="ressources/btn9.png" style="border:1px solid black; position: absolute; top: 130px; left: 580px;" width="25" height="30">
+        <button id="hint" style="border:1px solid black; position: absolute; top: 96px; left: 620px;" >HINT</button>
+        <button id="couleur" style="border:1px solid black; position: absolute; top: 180px; left: 500px;" >COULEUR</button>
+        <!--https://developer.mozilla.org/fr/docs/Web/HTML/Element/Input/color-->
+        <input id="chooseColor"type="color" style="position: absolute; top: 176px; left: 590px;">
+        <button id="clear" style="border:1px solid black; position: absolute; top: 220px; left: 530px;" >CLEAR</button>
+        <button id="undo" style="border:1px solid black; position: absolute; top: 260px; left: 500px;" >UNDO</button>
+        <button id="redo" style="border:1px solid black; position: absolute; top: 260px; left: 570px;">REDO</button>
+        <p id="demo"></p>
+        <script src="script.js"></script>
+        
+    </div>
+</body>
+<style>
+    
+    #c1{
+        font-size: 30px;
+        position: absolute;
+        top: 18px; left: 28px;
+    }
+    #btn{
+        border: 1px solid black;
+        position: absolute;
+        top: 200px; left: 200px;
+    }
+</style>
+</html>

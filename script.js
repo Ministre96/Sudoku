@@ -1,6 +1,6 @@
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
-
+// DECLARATION DE VARIABLE
 var taille = 450;
 canvas.width = taille;
 canvas.height = taille;
@@ -14,7 +14,18 @@ var tabSudoku = new Array(9);
 var tempCoordx = null;
 var tempCoordy = null;
 
-function getGrille(nbr){
+//AJOUT EVENT SUR ELEMENT HTML
+var c = document.getElementById("canvas");
+c.onclick = showCoords;
+function setNumber(num){
+    var nbCase = "c";
+    nbCase = nbCase.concat(tempCoordx);
+    nbCase = nbCase.concat(tempCoordy);
+    document.getElementById(nbCase).innerHTML = num;
+    document.getElementById(nbCase).style.color="green";
+}
+//RECUPERATION GRILLE
+/*function getGrille(nbr){
     var xhr = new XMLHttpRequest();
     var json = xhr.responseText;
     xhr.open("POST", "GetGrilles.php", true);
@@ -23,8 +34,9 @@ function getGrille(nbr){
     var grille = JSON.parse(json);
     var sudoku = grille["grille"];
     return sudoku;
-}
+}*/
 
+//DESSIN DE LA GRILLE DE SUDOKU AVEC CANVA
 for (var i = 0; i < 9; i++)
 {
  tabSudoku[i] = new Array(9);
@@ -49,7 +61,7 @@ for (i = 0; i < 10; i++) {
     ctx.lineTo(taille, (i * taille / 9));
     ctx.stroke();
 }
-
+//AJOUT DES VALEURS DE BASE DANS LA GRILLE
 var element = document.getElementById("sudoku");
 var cpt = 0;
 for (i = 0; i < 9; i++) {
@@ -72,8 +84,7 @@ for (i = 0; i < 9; i++) {
     }
     cpt++;
 }
-var c = document.getElementById("canvas");
-c.onclick = showCoords;
+}
 
 //fonction qui vérifie la règle de base sudoku
 function verifRB(){
@@ -123,27 +134,48 @@ function verifBloc(num){
     }
     return test;
 }
+//FONCTION RECUP DES COORDONNE + SELCTION DE LA CASE 
 function showCoords(event) {
     var x = event.pageX;
     var y = event.pageY;
     x =Number.parseInt(((x-10)/50));
     y =Number.parseInt(((y-10)/50));
     var coords = "X coords: " + x + ", Y coords: " + y;
-    var ctx = canvas.getContext('2d');
-    ctx.beginPath();
-    ctx.strokeStyle = "#1F9AC4";
-    ctx.fillStyle = "#7FD3EF";
-    ctx.lineWidth =1.0;
-    ctx.fillRect((x *50), (y *50),50, 50);
-    ctx.strokeRect((x *50), (y *50),50, 50);
-    ctx.strokeStyle = "black";
-    ctx.fillStyle = null;
-    ctx.clearRect((tempCoordx *50), (tempCoordy *50),50, 50);
-    ctx.strokeRect((tempCoordx *50), (tempCoordy *50),50, 50);
-    document.getElementById("demo").innerHTML = coords;
-    tempCoordx = x;
-    tempCoordy =y;
+    if(x<taille && y<taille){
+        var ctx = canvas.getContext('2d');
+        ctx.beginPath();
+        ctx.strokeStyle = "#1F9AC4";
+        ctx.fillStyle = "#7FD3EF";
+        ctx.lineWidth =1.0;
+        ctx.fillRect((x *50), (y *50),50, 50);
+        ctx.strokeRect((x *50), (y *50),50, 50);
+        ctx.strokeStyle = "black";
+        ctx.fillStyle = null;
+        ctx.clearRect((tempCoordx *50), (tempCoordy *50),50, 50);
+        ctx.strokeRect((tempCoordx *50), (tempCoordy *50),50, 50);
+        document.getElementById("demo").innerHTML = coords;
+        tempCoordx = x;
+        tempCoordy =y;
+    }
   }
-
+var tab = new Array();
+var cpt =null;
+for (let l = 0; l < 55; l+=27) {
+    
+    for (let k = 0; k < 7; k+=3) {
+        
+        for (let j = 0; j < 19; j+=9) {
+            
+            for (let i = 0; i < 3; i++) {
+                tab[cpt] = tabSudoku[i+j+k+l]
+                cpt++;
+                /*var test = i+j+k+l;
+                var tag = document.createElement("div");
+                tag.setAttribute("id", test);
+                document.getElementById(test).innerHTML= test;*/
+                console.log(i+j+k+l);
+            }
+        }
+    }
 }
 
