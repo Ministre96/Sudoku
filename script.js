@@ -15,7 +15,7 @@ var tempCoordy = null;
 var tabBloc = new Array();
 var tabCol = new Array();
 var tabLine = new Array();
-
+var tabExcluded = new Array();
 //AJOUT EVENT SUR ELEMENT HTML
 var c = document.getElementById("canvas");
 c.onclick = showCoords;
@@ -105,20 +105,26 @@ function showCoords(event) {
     y =Number.parseInt(((y-10)/50));
     var coords = "X coords: " + x + ", Y coords: " + y;
     if(x<taille && y<taille){
-        var ctx = canvas.getContext('2d');
-        ctx.beginPath();
-        ctx.strokeStyle = "#1F9AC4";
-        ctx.fillStyle = "#7FD3EF";
-        ctx.lineWidth =1.0;
-        ctx.fillRect((x *50), (y *50),50, 50);
-        ctx.strokeRect((x *50), (y *50),50, 50);
-        ctx.strokeStyle = "black";
-        ctx.fillStyle = null;
-        ctx.clearRect((tempCoordx *50), (tempCoordy *50),50, 50);
-        ctx.strokeRect((tempCoordx *50), (tempCoordy *50),50, 50);
-        document.getElementById("demo").innerHTML = coords;
-        tempCoordx = x;
-        tempCoordy =y;
+        if((tabExcluded.find(checkExcluded)) == null){
+            var ctx = canvas.getContext('2d');
+            ctx.beginPath();
+            ctx.strokeStyle = "#1F9AC4";
+            ctx.fillStyle = "#7FD3EF";
+            ctx.lineWidth =1.0;
+            ctx.fillRect((x *50), (y *50),50, 50);
+            ctx.strokeRect((x *50), (y *50),50, 50);
+            ctx.strokeStyle = "black";
+            ctx.fillStyle = null;
+            ctx.clearRect((tempCoordx *50), (tempCoordy *50),50, 50);
+            ctx.strokeRect((tempCoordx *50), (tempCoordy *50),50, 50);
+            document.getElementById("demo").innerHTML = coords;
+            tempCoordx = x;
+            tempCoordy =y;
+        }
+    }
+
+    function checkExcluded(excluded){
+        return excluded == x.toString().concat(y);
     }
   }
 
@@ -138,8 +144,18 @@ function setNumber(num){
 
 //FONCTION DE CREATION ET DE MAJ DES DIFF TAB
 function createTabLine(){
-    for (let i = 0; i < 81; i++) {
+    tabExcluded.length = 0;
+    var cpt = 0;
+    var temp;
+    for (let i = 0; i < 81; i++) {  
         tabLine[i]= sudoku.charAt(i);
+        //TABLEAU STOCKANT LES CASES A BLOQUER POUR LE SELECTED
+        if(sudoku.charAt(i)!= "."){
+            temp = (i%9);
+            tabExcluded[cpt] = temp.toString().concat(((i-(i%9))/9));
+            console.log(tabExcluded[cpt]);
+            cpt++;
+        }
     }
 }
   function createTabCol(){
