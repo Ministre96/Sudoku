@@ -43,10 +43,8 @@ function Init(){
     createTabLine();
     updateTabBloc();
     createTabCol();
-    
-    
-
 }
+
 //DESSIN DE LA GRILLE DE SUDOKU AVEC CANVA
 function drawSudoku(){
     for (i = 0; i < 10; i++) {
@@ -86,8 +84,8 @@ function setBaseValue(){
             element.appendChild(tag);
             tag.style.fontSize = 30 + 'px';
             tag.style.position = "absolute";
-            tag.style.left = 28+(taille/9*i) + 'px';
-            tag.style.top = 18+(taille/9*j) + 'px';
+            tag.style.left = 28+(taille/9*j) + 'px';
+            tag.style.top = 18+(taille/9*i) + 'px';
             if(sudoku.charAt(cpt)== "."){
                 document.getElementById(caracter).innerHTML = " ";
             } else {
@@ -129,37 +127,41 @@ function setNumber(num){
     var nbCase = "c";
     nbCase = nbCase.concat(tempCoordx);
     nbCase = nbCase.concat(tempCoordy);
+    updateTab(num);
     document.getElementById(nbCase).innerHTML = num;
+    if(verifValue() == false){
     document.getElementById(nbCase).style.color="green";
+    }else{
+        document.getElementById(nbCase).style.color="red";
+    }
 }
 
 //FONCTION DE CREATION ET DE MAJ DES DIFF TAB
 function createTabLine(){
     for (let i = 0; i < 81; i++) {
         tabLine[i]= sudoku.charAt(i);
-        console.log(tabLine[i]);
     }
 }
   function createTabCol(){
     var cpt = null;
     for (let i = 0; i < 9; i++) {
         for (let j = 0; j < 9; j++) {
-            tabCol[cpt]= tabLine[i+j*9]
+            tabCol[cpt]= tabLine[i+j*9];
             cpt++;
         }
         
     }
 }
-function updateTab(x){
-    updateTabLine(x);
-    updateTabCol(x);
-    updateTabBloc(x);
+function updateTab(num){
+    updateTabLine(num);
+    updateTabCol(num);
+    updateTabBloc();
 }
-function updateTabLine(x){
-    tabLine[tempCoordx+tempCoordy*9] = x;
+function updateTabLine(num){
+    tabLine[tempCoordx+tempCoordy*9] = num;
 }
-function updateTabCol(x){
-    tabLine[tempCoordx*9+tempCoordy]=x;
+function updateTabCol(num){
+    tabLine[tempCoordx*9+tempCoordy]=num;
 }
 function updateTabBloc(){
     var cpt =null;
@@ -167,18 +169,62 @@ function updateTabBloc(){
         for (let k = 0; k < 3; k++) {
             for (let j = 0; j < 3; j++) {
                 for (let i = 0; i < 3; i++) {
-                    tabBloc[cpt] = tabLine[i+j*9+k*3+l*27]
-                    console.log(tabBloc[cpt]);
+                    tabBloc[cpt] = tabLine[i+j*9+k*3+l*27];
                     cpt++;
-                    /*var test = i+j+k+l;
-                    var tag = document.createElement("div");
-                    tag.setAttribute("id", test);*/
-                    document.getElementById("demo").innerHTML= "test";
-                    
                 }
             }
         }   
     }
 }
+//FONCTIONS DE VERIFICATION 
+function verifValue(){
+    var test = verifLine()+ verifCol() + verifBloc();
+    return test;
+}
+function verif(startValue, num){
+    var tabTemp = new Array();
+    var startValue;
+    var value;
+    var verify = 0;
+    switch(num){
+        case 0:
+            value = tempCoordx*9+tempCoordy;
+            startValue = value-value%9;
+            tabTemp = tabLine;
+            break;
+        case 1:
+            value = tempCoordx+tempCoordy*9;
+            startValue = value-value%9;
+            tabTemp = tabCol;
+            break;
+        case 2:
+            startValue = (((tempCoordx+1)-(tempCoordx+1)%3) +((tempCoordy+1)-(tempCoordy+1)%3))*9;
+            value = ((((tempCoordx+1)-(tempCoordx+1)%3) +((tempCoordy+1)-(tempCoordy+1)%3))*9)+((tempCoordx%3)+((tempCoordy%3)*3));
+            tabTemp = tabBloc;
+            break;
+    }
+    for (let i = 0; i < 9; i++) {
+        if (tabTemp[startValue+i]==tabTemp[value]) {
+            verify++;
+        }
+     }
+     if (verify == 1) {
+         return true;
+     }
+     return false;
+            
+}
+function verifLine(){
+    var num = 0;
+    return verif(startValue, num);
+}
 
+function verifCol(){
+    var num = 1;
+    return verif(startValue, num);
+}
 
+function verifBloc(){
+    var num = 2;
+    return verif(startValue, num);
+}
