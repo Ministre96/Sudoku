@@ -77,8 +77,8 @@ function setBaseValue(){
         for (j = 0; j < 9; j++){
             var tag = document.createElement("div");
             var c = "c";
-            var c = c.concat(i);
-            var caracter = c.concat(j);
+            var c = c.concat(j);
+            var caracter = c.concat(i);
             tag.setAttribute("id", caracter);
             tag.classList.add(caracter);
             element.appendChild(tag);
@@ -135,7 +135,7 @@ function setNumber(num){
     nbCase = nbCase.concat(tempCoordy);
     updateTab(num);
     document.getElementById(nbCase).innerHTML = num;
-    if(verifValue() == false){
+    if(verifValue() == 2){
     document.getElementById(nbCase).style.color="green";
     }else{
         document.getElementById(nbCase).style.color="red";
@@ -153,7 +153,6 @@ function createTabLine(){
         if(sudoku.charAt(i)!= "."){
             temp = (i%9);
             tabExcluded[cpt] = temp.toString().concat(((i-(i%9))/9));
-            console.log(tabExcluded[cpt]);
             cpt++;
         }
     }
@@ -177,7 +176,7 @@ function updateTabLine(num){
     tabLine[tempCoordx+tempCoordy*9] = num;
 }
 function updateTabCol(num){
-    tabLine[tempCoordx*9+tempCoordy]=num;
+    tabCol[tempCoordx*9+tempCoordy]=num;
 }
 function updateTabBloc(){
     var cpt =null;
@@ -194,53 +193,58 @@ function updateTabBloc(){
 }
 //FONCTIONS DE VERIFICATION 
 function verifValue(){
-    var test = verifLine()+ verifCol() + verifBloc();
+    var test = /*verifLine()+ verifCol()*/+ verifBloc();
     return test;
 }
-function verif(startValue, num){
+
+function verif(num){
     var tabTemp = new Array();
     var startValue;
     var value;
     var verify = 0;
-    switch(num){
-        case 0:
-            value = tempCoordx*9+tempCoordy;
-            startValue = value-value%9;
-            tabTemp = tabLine;
-            break;
-        case 1:
-            value = tempCoordx+tempCoordy*9;
-            startValue = value-value%9;
-            tabTemp = tabCol;
-            break;
-        case 2:
-            startValue = (((tempCoordx+1)-(tempCoordx+1)%3) +((tempCoordy+1)-(tempCoordy+1)%3))*9;
-            value = ((((tempCoordx+1)-(tempCoordx+1)%3) +((tempCoordy+1)-(tempCoordy+1)%3))*9)+((tempCoordx%3)+((tempCoordy%3)*3));
-            tabTemp = tabBloc;
-            break;
+    var test = Math.floor((tempCoordx-1)/3);
+    if (num == 0) {
+        value = tempCoordx+tempCoordy*9;
+        startValue = value-value%9;
+        tabTemp = tabLine;
+    }else if(num ==1){
+        value = tempCoordx*9+tempCoordy;
+        startValue = value-value%9;
+        tabTemp = tabCol;
+    }else if(num == 2){
+        
+        value = 27*(Math.floor((tempCoordy-1)/3))+9*(Math.floor((tempCoordx-1)/3))+3+((tempCoordy-1)%3)*3;
+        if(tempCoordx%3 == 0 ){
+            value =+3;
+        }else{
+            value =+tempCoordx%3;
+        }
+       startValue = value - value%9;
+       tabTemp = tabBloc;
+       console.log(value);
     }
     for (let i = 0; i < 9; i++) {
         if (tabTemp[startValue+i]==tabTemp[value]) {
             verify++;
         }
      }
+     
      if (verify == 1) {
          return true;
      }
-     return false;
-            
+     return false;           
 }
 function verifLine(){
     var num = 0;
-    return verif(startValue, num);
+    return verif(num);
 }
 
 function verifCol(){
     var num = 1;
-    return verif(startValue, num);
+    return verif(num);
 }
 
 function verifBloc(){
     var num = 2;
-    return verif(startValue, num);
+    return verif(num);
 }
