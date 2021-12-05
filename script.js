@@ -145,7 +145,34 @@ function checkKey(e){
                 
                 drawSelectCase(x, y);
             }
-        }
+        }else if(e.keyCode == '49'){
+           updateTab(1);
+           showUpdate(1);
+        }else if(e.keyCode == '50' || e.keyCode == '97'){
+            updateTab(2);
+            showUpdate(2);
+         }else if(e.keyCode == '51'|| e.keyCode == '98'){
+            updateTab(3);
+            showUpdate(3);
+         }else if(e.keyCode == '52'|| e.keyCode == '99'){
+            updateTab(4);
+            showUpdate(4);
+         }else if(e.keyCode == '53'|| e.keyCode == '100'){
+            updateTab(5);
+            showUpdate(5);
+         }else if(e.keyCode == '54'|| e.keyCode == '101'){
+            updateTab(6);
+            showUpdate(6);
+         }else if(e.keyCode == '55'|| e.keyCode == '102'){
+            updateTab(7);
+            showUpdate(7);
+         }else if(e.keyCode == '56'|| e.keyCode == '103'){
+            updateTab(8);
+            showUpdate(8);
+         }else if(e.keyCode == '57'|| e.keyCode == '104'){
+            updateTab(9);
+            showUpdate(9);
+         }
         function checkExcluded(excluded){
             return excluded == x.toString().concat(y);
         }
@@ -174,10 +201,22 @@ function drawSelectCase(x, y){
 
 //AJOUT D UN NOMBRE DANS LA GRILLE
 function setNumber(num){
+    updateTab(num);
+    showUpdate(num);
+}
+//EFFACER UN NOMBRE DE LA GRILLE
+function clearSelectedCase(){
     var nbCase = "c";
     nbCase = nbCase.concat(tempCoordx);
     nbCase = nbCase.concat(tempCoordy);
-    updateTab(num);
+    var cleared = "."
+    document.getElementById(nbCase).innerHTML = " ";
+    updateTab(cleared);
+}
+function showUpdate(num){
+    var nbCase = "c";
+    nbCase = nbCase.concat(tempCoordx);
+    nbCase = nbCase.concat(tempCoordy);
     document.getElementById(nbCase).innerHTML = num;
     if(verifValue() == 3){
     document.getElementById(nbCase).style.color="green";
@@ -185,16 +224,6 @@ function setNumber(num){
         document.getElementById(nbCase).style.color="red";
     }
 }
-//EFFACER UN NOMBRE DE LA GRILLE
-function clearSelectedCase(){
-    var cleared = "."
-    var nbCase = "c";
-    nbCase = nbCase.concat(tempCoordx);
-    nbCase = nbCase.concat(tempCoordy);
-    updateTab(cleared);
-    document.getElementById(nbCase).innerHTML = " ";
-}
-
 
 //FONCTION DE CREATION ET DE MAJ DES DIFF TAB
 function createTabLine(){
