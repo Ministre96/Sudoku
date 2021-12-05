@@ -185,6 +185,16 @@ function setNumber(num){
         document.getElementById(nbCase).style.color="red";
     }
 }
+//EFFACER UN NOMBRE DE LA GRILLE
+function clearSelectedCase(){
+    var cleared = "."
+    var nbCase = "c";
+    nbCase = nbCase.concat(tempCoordx);
+    nbCase = nbCase.concat(tempCoordy);
+    updateTab(cleared);
+    document.getElementById(nbCase).innerHTML = " ";
+}
+
 
 //FONCTION DE CREATION ET DE MAJ DES DIFF TAB
 function createTabLine(){
