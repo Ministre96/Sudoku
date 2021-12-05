@@ -121,7 +121,9 @@ function checkKey(e){
         x = tempCoordx;
         y = tempCoordy;
         e = e || window.event;
-        if(e.keyCode == '37'){
+        if(e.keyCode == '8' || e.keyCode == '46'){  
+            clearSelectedCase();
+        }else if(e.keyCode == '37'){
             x--;
             if(x>-1 && (tabExcluded.find(checkExcluded)) == null){
                 
