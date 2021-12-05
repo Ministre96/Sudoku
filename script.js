@@ -145,33 +145,24 @@ function checkKey(e){
                 
                 drawSelectCase(x, y);
             }
-        }else if(e.keyCode == '49'){
-           updateTab(1);
-           showUpdate(1);
-        }else if(e.keyCode == '50' || e.keyCode == '97'){
-            updateTab(2);
-            showUpdate(2);
-         }else if(e.keyCode == '51'|| e.keyCode == '98'){
-            updateTab(3);
-            showUpdate(3);
-         }else if(e.keyCode == '52'|| e.keyCode == '99'){
-            updateTab(4);
-            showUpdate(4);
-         }else if(e.keyCode == '53'|| e.keyCode == '100'){
-            updateTab(5);
-            showUpdate(5);
-         }else if(e.keyCode == '54'|| e.keyCode == '101'){
-            updateTab(6);
-            showUpdate(6);
-         }else if(e.keyCode == '55'|| e.keyCode == '102'){
-            updateTab(7);
-            showUpdate(7);
-         }else if(e.keyCode == '56'|| e.keyCode == '103'){
-            updateTab(8);
-            showUpdate(8);
-         }else if(e.keyCode == '57'|| e.keyCode == '104'){
-            updateTab(9);
-            showUpdate(9);
+        }else if(e.keyCode == '49'|| e.keyCode == '97'){
+           setNumber(1);
+        }else if(e.keyCode == '50'|| e.keyCode == '98' ){
+            setNumber(2);
+         }else if(e.keyCode == '51'|| e.keyCode == '99'){
+            setNumber(3);
+         }else if(e.keyCode == '52'|| e.keyCode == '100'){
+            setNumber(4);
+         }else if(e.keyCode == '53'|| e.keyCode == '101'){
+            setNumber(5);
+         }else if(e.keyCode == '54'|| e.keyCode == '102'){
+            setNumber(6);
+         }else if(e.keyCode == '55'|| e.keyCode == '103'){
+            setNumber(7);
+         }else if(e.keyCode == '56'|| e.keyCode == '104'){
+            setNumber(8);
+         }else if(e.keyCode == '57'|| e.keyCode == '105'){
+            setNumber(9);
          }
         function checkExcluded(excluded){
             return excluded == x.toString().concat(y);
