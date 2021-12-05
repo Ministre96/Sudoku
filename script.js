@@ -6,7 +6,7 @@ canvas.width = taille;
 canvas.height = taille;
 var nbr = 1;
 var lettre = "c";
-
+document.onkeydown = checkKey;
 
 //var sudoku = getGrille(2);
 var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7";
@@ -106,27 +106,71 @@ function showCoords(event) {
     var coords = "X coords: " + x + ", Y coords: " + y;
     if(x<taille && y<taille){
         if((tabExcluded.find(checkExcluded)) == null){
-            var ctx = canvas.getContext('2d');
-            ctx.beginPath();
-            ctx.strokeStyle = "#1F9AC4";
-            ctx.fillStyle = "#7FD3EF";
-            ctx.lineWidth =1.0;
-            ctx.fillRect((x *50), (y *50),50, 50);
-            ctx.strokeRect((x *50), (y *50),50, 50);
-            ctx.strokeStyle = "black";
-            ctx.fillStyle = null;
-            ctx.clearRect((tempCoordx *50), (tempCoordy *50),50, 50);
-            ctx.strokeRect((tempCoordx *50), (tempCoordy *50),50, 50);
-            document.getElementById("demo").innerHTML = coords;
-            tempCoordx = x;
-            tempCoordy =y;
+            drawSelectCase(x, y);
+            
         }
     }
-
     function checkExcluded(excluded){
         return excluded == x.toString().concat(y);
     }
   }
+//DEPLACEMENT FLECHE CLAVIER (PERSPECTIVE D AMELIO: FAIRE UN SAUT DE CASE QUAND CASE LOCK)
+function checkKey(e){
+    if(tempCoordx != null){
+        var x, y;
+        x = tempCoordx;
+        y = tempCoordy;
+        e = e || window.event;
+        if(e.keyCode == '37'){
+            x--;
+            if(x>-1 && (tabExcluded.find(checkExcluded)) == null){
+                
+                drawSelectCase(x, y);
+            }
+        }else if(e.keyCode == '38'){
+            y--;
+            if(y>-1 && (tabExcluded.find(checkExcluded)) == null){
+                
+                drawSelectCase(x, y);
+            }
+        }else if(e.keyCode == '39'){
+            x++;
+            if(x<9 && (tabExcluded.find(checkExcluded)) == null){
+               
+                drawSelectCase(x, y);
+            }
+        }else if(e.keyCode == '40'){
+            y++;
+            if(y<9 && (tabExcluded.find(checkExcluded)) == null){
+                
+                drawSelectCase(x, y);
+            }
+        }
+        function checkExcluded(excluded){
+            return excluded == x.toString().concat(y);
+        }
+    }
+    
+}
+
+
+function drawSelectCase(x, y){
+    var ctx = canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.strokeStyle = "#1F9AC4";
+    ctx.fillStyle = "#7FD3EF";
+    ctx.lineWidth =1.0;
+    ctx.fillRect((x *50), (y *50),50, 50);
+    ctx.strokeRect((x *50), (y *50),50, 50);
+    ctx.strokeStyle = "black";
+    ctx.fillStyle = null;
+    ctx.clearRect((tempCoordx *50), (tempCoordy *50),50, 50);
+    ctx.strokeRect((tempCoordx *50), (tempCoordy *50),50, 50);
+    tempCoordx = x;
+    tempCoordy =y;
+}
+
+
 
 //AJOUT D UN NOMBRE DANS LA GRILLE
 function setNumber(num){
