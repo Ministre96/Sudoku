@@ -8,6 +8,23 @@ var nbr = 1;
 var lettre = "c";
 document.onkeydown = checkKey;
 
+
+// Test
+var json;
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "GetGrilles.php", true);
+xhr.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200){
+        json = this.responseText;
+        console.log("ok");
+    }
+}
+xhr.send();
+//console.log(JSON.parse(json));
+//var grille = JSON.parse(json);
+//console.log(grille);
+
+
 //var sudoku = getGrille(2);
 var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7";
 var tempCoordx = null;
@@ -21,16 +38,19 @@ var c = document.getElementById("canvas");
 c.onclick = showCoords;
 
 //RECUPERATION GRILLE
-/*function getBaseValue(nbr){
+/*function getGrilles(){
+    var json;
     var xhr = new XMLHttpRequest();
-    var json = xhr.responseText;
-    xhr.open("POST", "GetGrilles.php", true);
+    xhr.open("GET", "GetGrilles.php", true);
     xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send(nbr);
+    xhr.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200){
+            json = this.responseText;
+        }
+    }
+    xhr.send();
     var grille = JSON.parse(json);
-    var sudoku = grille["grille"];
-    createtabLine(ta chaine de caractère json)
-    return sudoku;
+    console.log(grille);
 }*/
 
 //INITIALISATION
