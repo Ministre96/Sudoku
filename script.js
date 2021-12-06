@@ -11,24 +11,8 @@ var knight = 0;
 var king = 0;
 var noSeq = 0;
 
-// Test
-var json;
-var xhr = new XMLHttpRequest();
-xhr.open("GET", "GetGrilles.php", true);
-xhr.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200){
-        json = this.responseText;
-        console.log("ok")
-    }
-}
-xhr.send();
-//console.log(JSON.parse(json));
-//var grille = JSON.parse(json);
-//console.log(grille);
-
-
-//var sudoku = getGrille(2);
-var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7, 0, 1, 0, null, null, null";
+var s;
+var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7";
 var tempCoordx = null;
 var tempCoordy = null;
 var tabBloc = new Array();
@@ -40,20 +24,26 @@ var c = document.getElementById("canvas");
 c.onclick = showCoords;
 
 //RECUPERATION GRILLE
-/*function getGrilles(){
+function getGrilles(nbr){
     var json;
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "GetGrilles.php", true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200){
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
             json = this.responseText;
+            var value = JSON.parse(json);
+            for (i=0 ; i<value.length ; i++){
+                if (value[i]["gid"] == nbr) {
+                    var grille = value[i]["grille"];
+                    s = grille;
+                }
+            }
         }
     }
     xhr.send();
-    var grille = JSON.parse(json);
-    console.log(grille);
-}*/
+}
+
+console.log(s);
 
 //INITIALISATION
 Init();
