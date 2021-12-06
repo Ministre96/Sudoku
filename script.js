@@ -7,7 +7,9 @@ canvas.height = taille;
 var nbr = 1;
 var lettre = "c";
 document.onkeydown = checkKey;
-
+var knight = 0;
+var king = 0;
+var noSeq = 0;
 
 // Test
 var json;
@@ -16,7 +18,7 @@ xhr.open("GET", "GetGrilles.php", true);
 xhr.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200){
         json = this.responseText;
-        console.log("ok");
+        console.log("ok")
     }
 }
 xhr.send();
@@ -26,7 +28,7 @@ xhr.send();
 
 
 //var sudoku = getGrille(2);
-var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7";
+var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7, 0, 1, 0, null, null, null";
 var tempCoordx = null;
 var tempCoordy = null;
 var tabBloc = new Array();
@@ -65,6 +67,48 @@ function Init(){
     createTabCol();
 }
 
+//VERIFICATION DES REGLES DE LA GRILLE
+function verifRules(){
+    if(sudoku.charAt(83)==1){
+        knight = 1;
+    }else{
+        knight = 0;
+    }
+    if(sudoku.charAt(86)==1){
+        king = 1;
+    }else{
+        king = 0;
+    }
+    if(sudoku.charAt(89)==1){
+        noSeq = 1;
+    }else{
+        noSeq = 0;
+    }
+    showRules();
+}
+
+function showRules(){
+    if(knight == 1){
+        document.getElementById("knight").innerHTML = "Règle du Chevalier";  
+    }else{
+        document.getElementById("knight").style.display = "none";
+    }
+    if(king == 1){
+        document.getElementById("king").innerHTML = "Règle du Roi";  
+    }else{
+        document.getElementById("king").style.display = "none";
+    }
+    if(noSeq == 1){
+        document.getElementById("noSeq").innerHTML = "Règle du Non Séquentiel";  
+    }else{
+        document.getElementById("noSeq").style.display = "none";
+    }
+    if((knight+king+noSeq) == 0 ){
+        document.getElementById("noRule").innerHTML = "Aucune règle particulière"
+    }else{
+        document.getElementById("noRule").style.display = "none";
+    }
+}
 //DESSIN DE LA GRILLE DE SUDOKU AVEC CANVA
 function drawSudoku(){
     for (i = 0; i < 10; i++) {
@@ -93,6 +137,7 @@ function drawSudoku(){
 function setBaseValue(){
     var element = document.getElementById("sudoku");
     var cpt = 0;
+    verifRules();
     for (i = 0; i < 9; i++) {
         for (j = 0; j < 9; j++){
             var tag = document.createElement("div");
@@ -115,7 +160,6 @@ function setBaseValue(){
         }
     }
 }
-
 
 //FONCTION RECUP DES COORDONNE + SELCTION DE LA CASE 
 function showCoords(event) {
@@ -231,7 +275,7 @@ function showUpdate(num){
     nbCase = nbCase.concat(tempCoordx);
     nbCase = nbCase.concat(tempCoordy);
     document.getElementById(nbCase).innerHTML = num;
-    if(verifValue() == 3){
+    if(verifValue() == (3+king+knight+noSeq)){
     document.getElementById(nbCase).style.color="green";
     }else{
         document.getElementById(nbCase).style.color="red";
@@ -290,6 +334,15 @@ function updateTabBloc(){
 //FONCTIONS DE VERIFICATION 
 function verifValue(){
     var test = verifLine()+ verifCol()+ verifBloc();
+    if(knight == 1){
+        test = test + verifKnight();
+    }
+    if(king == 1){
+        test = test + verifKing();
+    }
+    if(noSeq == 1){
+        test = test + verifNoSeq();
+    }
     return test;
 }
 
@@ -323,9 +376,9 @@ function verif(num){
      }
      
      if (verify == 1) {
-         return true;
+         return 1;
      }
-     return false;           
+     return 0;           
 }
 function verifLine(){
     var num = 0;
@@ -340,4 +393,44 @@ function verifCol(){
 function verifBloc(){
     var num = 2;
     return verif(num);
+}
+function verifKing(){
+    var value = tempCoordx+tempCoordy*9;
+    var verify = 0;
+    let i=0;
+    let j=0;
+    let cpti = 0;
+    let cptj = 0;
+    if (tempCoordy < 1) {
+        i++;
+    }else if(tempCoordy > 7){
+        cpti--;
+    }
+    if(tempCoordx > 7 ){
+        cptj--;
+    }
+    for (i; i < (3+cpti); i++) {
+        j=0;
+        if(tempCoordx < 1){
+            j++;
+        }
+        
+        for (j; j < (3+cptj); j++) {
+            if(tabLine[value] == (tabLine[value-10+(9*i)+j])){
+                console.log("test");
+                verify++;
+            }     
+            
+        }
+    }
+    if (verify == 1) {
+        return 1;
+    }
+    return 0;
+}
+function verifKnight(){
+    
+}
+function verifNoSeq(){
+
 }
