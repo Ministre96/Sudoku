@@ -12,12 +12,12 @@ var king = 0;
 var noSeq = 0;
 
 var s;
-var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7";
-var tempCoordx = null;
-var tempCoordy = null;
-var tabBloc = new Array();
-var tabCol = new Array();
-var tabLine = new Array();
+var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7, 0, 0, 1";
+let tempCoordx = null;
+let tempCoordy = null;
+let tabBloc = new Array();
+let tabCol = new Array();
+let tabLine = new Array();
 var tabExcluded = new Array();
 //AJOUT EVENT SUR ELEMENT HTML
 var c = document.getElementById("canvas");
@@ -43,7 +43,7 @@ function getGrilles(nbr){
     xhr.send();
 }
 
-console.log(s);
+//console.log(s);
 
 //INITIALISATION
 Init();
@@ -333,6 +333,11 @@ function verifValue(){
     if(noSeq == 1){
         test = test + verifNoSeq();
     }
+    console.log(verifLine());
+    console.log(verifCol());
+    console.log(verifBloc());
+    //console.log(verifKnight());
+    console.log(verifNoSeq());
     return test;
 }
 
@@ -407,7 +412,7 @@ function verifKing(){
         
         for (j; j < (3+cptj); j++) {
             if(tabLine[value] == (tabLine[value-10+(9*i)+j])){
-                console.log("test");
+                
                 verify++;
             }     
             
@@ -419,8 +424,40 @@ function verifKing(){
     return 0;
 }
 function verifKnight(){
-    
+
 }
 function verifNoSeq(){
+    let i = 0;
+    let j =0;
+    let cpti = 0;
+    let cptj = 0;
+    var valueLine = tempCoordx+tempCoordy*9;
+    var valueCol = tempCoordx*9+tempCoordy;
+    var verify = 0;
+    if (tempCoordy < 1) {
+        i++;
+    }else if(tempCoordy > 7){
+        cpti--;
+    }
+    for (i; i < 2+cpti; i++) {
+        if(tabLine[valueLine] == (parseInt(tabLine[valueLine+i*2-1])-1) || tabLine[valueLine] == (parseInt(tabLine[valueLine+i*2-1])+1)){
+            verify++;
+            
+        }
+    }
+    if (tempCoordy < 1) {
+        j++;
+    }else if(tempCoordy > 7){
+        cptj--;
+    }
+    for (j; j < 2+cptj; j++) {
+        if(tabCol[valueCol] == (parseInt(tabCol[valueCol+j*2-1])-1) || tabCol[valueCol] == (parseInt(tabCol[valueCol+j*2-1])+1)){
+            verify++;
+        }
+    }
+    if (verify == 0) {
+        return 1;
+    }
+    return 0;
 
 }
