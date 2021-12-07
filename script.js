@@ -424,6 +424,47 @@ function verifKing(){
     return 0;
 }
 function verifKnight(){
+    let i =0, cpti=0;
+    let j =0, cptj =0;
+    let k =0, cptk =0;
+    let l =0, cptl =0;
+    var verify = 0;
+    var value = tempCoordx+tempCoordy*9;
+    if (tempCoordx < 1) {
+        k+=2;
+    }else if (tempCoordx < 2) {
+        k++;
+    }else if (tempCoordx > 7) {
+        i+=2;
+    }else if (tempCoordx > 8) {
+        i++;
+    }
+    if (tempCoordy < 1) {
+        
+    }else if (tempCoordy < 2) {
+        
+    }else if (tempCoordy > 7) {
+        
+    }else if (tempCoordy > 8) {
+        
+    }
+
+    for (i; i < i+cpti; i++) {
+        for (j; j < j+cptj; j++) {
+           if (tabLine[value]== tab[value-9*2-1+i*7+j*(i+1)*2]) {
+               verify++;
+           }
+        }
+    }
+
+    for (k; k < 2+cptk; k++) {
+        for (l; l < 2+cptl; l++) {
+            if (tabLine[value]== tab[value+7+k*7+l*2+k*2]) {
+                verify++;
+            }
+            
+        }
+    }
 
 }
 function verifNoSeq(){
