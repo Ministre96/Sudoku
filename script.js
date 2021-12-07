@@ -12,7 +12,7 @@ var king = 0;
 var noSeq = 0;
 
 var s;
-var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7, 0, 0, 1";
+var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7, 1, 0, 0";
 let tempCoordx = null;
 let tempCoordy = null;
 let tabBloc = new Array();
@@ -336,8 +336,8 @@ function verifValue(){
     console.log(verifLine());
     console.log(verifCol());
     console.log(verifBloc());
-    //console.log(verifKnight());
-    console.log(verifNoSeq());
+    console.log(verifKnight());
+    //console.log(verifNoSeq());
     return test;
 }
 
@@ -424,48 +424,42 @@ function verifKing(){
     return 0;
 }
 function verifKnight(){
-    let i =0, cpti=0;
-    let j =0, cptj =0;
-    let k =0, cptk =0;
-    let l =0, cptl =0;
     var verify = 0;
     var value = tempCoordx+tempCoordy*9;
-    if (tempCoordx < 1) {
-        k+=2;
-    }else if (tempCoordx < 2) {
-        k++;
-    }else if (tempCoordx > 7) {
-        i+=2;
-    }else if (tempCoordx > 8) {
-        i++;
+    if (tempCoordx > 1 && tempCoordy > 0) {
+        verify = verify + equalsKnight(tabLine[value], tabLine[value-19]);
     }
-    if (tempCoordy < 1) {
-        
-    }else if (tempCoordy < 2) {
-        
-    }else if (tempCoordy > 7) {
-        
-    }else if (tempCoordy > 8) {
-        
+    if (tempCoordx>1 && tempCoordy<8) {
+       verify = verify + equalsKnight(tabLine[value], tabLine[value-17]);
     }
-
-    for (i; i < i+cpti; i++) {
-        for (j; j < j+cptj; j++) {
-           if (tabLine[value]== tab[value-9*2-1+i*7+j*(i+1)*2]) {
-               verify++;
-           }
-        }
+    if (tempCoordx > 0 && tempCoordy>1) {
+        verify = verify + equalsKnight(tabLine[value], tabLine[value-11]);
     }
-
-    for (k; k < 2+cptk; k++) {
-        for (l; l < 2+cptl; l++) {
-            if (tabLine[value]== tab[value+7+k*7+l*2+k*2]) {
-                verify++;
-            }
-            
-        }
+    if (tempCoordx > 0 && tempCoordy<7) {
+        verify = verify + equalsKnight(tabLine[value], tabLine[value-7]);
     }
-
+    if(tempCoordx <8 && tempCoordy>1){
+        verify = verify + equalsKnight(tabLine[value], tabLine[value+7]);
+    }
+    if(tempCoordx<7 && tempCoordy>0){
+        verify = verify + equalsKnight(tabLine[value], tabLine[value+17]);
+    }
+    if(tempCoordx<7 && tempCoordy<8){
+        verify = verify + equalsKnight(tabLine[value], tabLine[value+19]);
+    }
+    //console.log(verify);
+    if (verify == 0) {
+        return 1;
+    }
+    return 0;
+}
+function equalsKnight(nbr1, nbr2){
+    //console.log(nbr1);
+    //console.log(nbr2);
+    if(nbr1 == nbr2){
+        return 1;
+    }
+    return 0;
 }
 function verifNoSeq(){
     let i = 0;
