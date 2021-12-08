@@ -122,7 +122,18 @@ function drawSudoku(){
         ctx.stroke();
     }
 }
+function setColor(){
+    var color = document.getElementById("chooseColor").value;
+    console.log(color);
+    var ctx = canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.lineWidth =1.0;
+    ctx.fillRect((tempCoordx *50), (tempCoordy *50),50, 50);
+    tempCoordx = -1;
+    tempCoordy =-1;
 
+}
 //AJOUT DES VALEURS DE BASE DANS LA GRILLE
 function setBaseValue(){
     var element = document.getElementById("sudoku");
@@ -439,6 +450,10 @@ function verifKnight(){
         verify = verify + equalsKnight(tabLine[value], tabLine[value-7]);
     }
     if(tempCoordx <8 && tempCoordy>1){
+        verify = verify + equalsKnight(tabLine[value], tabLine[value+7]);
+    }
+    if (tempCoordx<8 && tempCoordy<7 ) {
+        //à trouver c'est quelle case 
         verify = verify + equalsKnight(tabLine[value], tabLine[value+7]);
     }
     if(tempCoordx<7 && tempCoordy>0){
