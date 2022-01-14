@@ -1,13 +1,16 @@
+// DECLARATION DE VARIABLE
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
-// DECLARATION DE VARIABLE
+var name;
+var pwd;
+var idGrille;
+var idPlayer;
+var swapNPM = true;
+hide("divPM");
 //DECLARATION POUR LE CANVAS
 var taille = 450;
 canvas.width = taille;
 canvas.height = taille;
-var hintBool = 0;
-var nbr = 1;
-var vartre = "c";
 //DECLARATION POUR LES ENTREE CLAVIER
 document.onkeydown = checkKey;
 //DECLARATION POUR LES REGLES SPECIALES
@@ -20,8 +23,7 @@ tabMemoryUndo = [null, null, null, null, null];
 var tabMemoryRedo = new Array();
 tabMemoryRedo = [null, null, null, null, null];
 var colorMemory;
-var s;
-var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7, 0, 0, 0";
+var sudoku = "";
 var tempCoordx = null;
 var tempCoordy = null;
 //DECLARATION DIFFERENT TABLEAU 
@@ -29,9 +31,8 @@ var tabBloc = new Array();
 var tabCol = new Array();
 var tabLine = new Array();
 var tabExcluded = new Array();
-//AJOUT EVENT SUR ELEMENT HTML
-var c = document.getElementById("canvas");
-c.onclick = showCoords;
+
+canvas.onclick = showCoords;
 var tabHint = new Array(9);
 for (var i = 0; i < 9; i++) {
     tabHint[i] = new Array(9);
@@ -39,10 +40,97 @@ for (var i = 0; i < 9; i++) {
         tabHint[i][j] = new Array(9);
     }
 }
+var tabHinted = new Array(9);
+for (var j = 0; j < 9; j++) {
+    tabHinted = new Array(9);
+}
 
+//INITIALISATION
+Init();
+function Init(){
+    document.getElementById("sudoku").style.display = "none";
+    document.getElementById("rejouer").style.display = "none";
+}
+function initCanvas(){
+    drawSudoku();
+    createHint();
+    createPM();
+    setBaseValue();
+    createTabLine();
+    updateTabBloc();
+    createTabCol();
+    updateHint();
+}
 
+//LOGIN
+function login(){
+    name = document.getElementById("name").value;
+    pwd = document.getElementById("password").value;
+    if (name !=""){
+        var xhr = new XMLHttpRequest();
+        var param = "name="+ encodeURIComponent(name);
+        param =param+"&password="+encodeURIComponent(pwd);
+        xhr.onreadystatechange=function(){
+            if (this.readyState === 4 && this.status === 200) {
+                if (xhr.responseText === "0"){ // compte inexistant faut le créer
+                    register(name, pwd);
+                } else { // tout est ok, on récup l'id et on recherche les grilles non faites
+                    idPlayer = xhr.responseText;
+                    searchGrille(xhr.responseText);
+                }
+            }
+        }
+        xhr.open("POST", "Login.php", true);
+        xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+        xhr.send(param);
+    } else {
+        alert("Veuillez remplir le champ \"Nom\"")
+    }
+}
 
+//REGISTER
+function register (name, pwd){
+    name = document.getElementById("name").value;
+    pwd = document.getElementById("password").value;
+    var xhr = new XMLHttpRequest();
+    var param = "name="+ encodeURIComponent(name);
+    param =param+"&password="+encodeURIComponent(pwd);
+    xhr.onreadystatechange=function(){
+        if (this.readyState === 4 && this.status === 200) {
+            if (xhr.responseText === "0"){
+                alert("Une erreur est survenue veuillez réessayer");
+            } else {
+                idPlayer = xhr.responseText;
+                document.getElementById("sudoku").style.display = "block";
+                document.getElementById("connexion").style.display = "none";
+                var nbrRand = Math.floor(Math.random() * 10) + 1;
+                getGrilles(nbrRand);
+            }
+        }
+    }
+    xhr.open("POST", "Register.php", true);
+    xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+    xhr.send(param);
+}
 
+// FONCTION DE RECHERCHE DE GRILLES NON FAITES PAR L'USER
+function searchGrille(id){
+    var xhr = new XMLHttpRequest();
+    var param = "id="+ encodeURIComponent(id);
+    xhr.onreadystatechange=function(){
+        if (this.readyState === 4 && this.status === 200) {
+            if (xhr.responseText != "0"){
+                var nbr = xhr.responseText;
+                getGrilles(nbr);
+                document.getElementById("sudoku").style.display = "block";
+                document.getElementById("connexion").style.display = "none";
+            }
+        }
+    }
+    xhr.open("POST", "GetGrillesFromPlayedGrid.php", true);
+    xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+    xhr.send(param);
+}
 
 //RECUPERATION GRILLE
 function getGrilles(nbr){
@@ -50,38 +138,61 @@ function getGrilles(nbr){
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "GetGrilles.php", true);
     xhr.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
+        if (this.readyState === 4 && this.status === 200) {
             json = this.responseText;
-            var value = JSON.parse(json);
-            for (i=0 ; i<value.length ; i++){
-                if (value[i]["gid"] == nbr) {
-                    var grille = value[i]["grille"];
-                    s = grille;
-                }
-            }
+            // On récupère une grille parmis toutes les grilles
+            getOneGrille(json, nbr);
         }
     }
     xhr.send();
 }
-
-//console.log(s);
-
-//INITIALISATION
-Init();
-
-function Init(){
-    
-    drawSudoku();
-    createHint();
-    createPM();
-    setBaseValue();
-    //getBaseValue();
-    createTabLine();
-    updateTabBloc();
-    createTabCol();
-    updateHint();
-
+function getOneGrille(json, nbr){
+    const value = JSON.parse(json);
+    for (i=1 ; i<=Object.keys(value).length ; i++){
+        if (value[i]["gid"] == nbr) {
+            sudoku = value[i]["grille"];
+            knight = value[i]["knight"];
+            king = value[i]["king"];
+            noSeq = value[i]["noseq"];
+            idGrille = nbr;
+            initCanvas();
+        }
+    }
 }
+
+// FONCTION DE FIN DE PARTIE
+function finish(){
+    alert ("Vous avez réussi !!!");
+
+    var xhr = new XMLHttpRequest();
+    var param = "idGrille="+ encodeURIComponent(idGrille);
+    param =param+"&idPlayer="+encodeURIComponent(idPlayer);
+    xhr.onreadystatechange=function(){
+        if (this.readyState === 4 && this.status === 200) {
+            if (xhr.responseText === "0"){
+                document.getElementById("sudoku").style.display = "none";
+                document.getElementById("rejouer").style.display = "block";
+            } else {
+                alert ("Une erreur est survenue, la grille n'as pas été enregistrée.")
+            }
+        }
+    }
+    xhr.open("POST", "FinishGrid.php", true);
+    xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+    xhr.send(param);
+}
+
+// FONCTION REJOUER
+function rejouer(){
+    searchGrille(idPlayer);
+}
+
+// FONCTION RETOUR A LA PAGE D'ACCUEIL
+function retour(){
+    document.getElementById("rejouer").style.display = "none";
+    document.getElementById("connexion").style.display = "block";
+}
+
 
 //VERIFICATION DES REGLES DE LA GRILLE
 function verifRules(){
@@ -103,6 +214,7 @@ function verifRules(){
     showRules();
 }
 
+// AFFICHER LA REGLE DE LA GRILLE
 function showRules(){
     if(knight == 1){
         document.getElementById("knight").innerHTML = "Règle du Chevalier";  
@@ -125,7 +237,7 @@ function showRules(){
         document.getElementById("noRule").style.display = "none";
     }
 }
-//DESSIN DE LA GRILLE DE SUDOKU AVEC CANVA
+//DESSINER LA GRILLE DE SUDOKU AVEC LE CANVAS
 function drawSudoku(){
     for (i = 0; i < 10; i++) {
         ctx.lineWidth = 1.0;
@@ -148,8 +260,9 @@ function drawSudoku(){
         ctx.stroke();
     }
 }
+
+// CHANGE LA COULEUR DE LA CASE
 function setColor(memory){
-    console.log(memory +"fuck" + tempCoordx +" "+ tempCoordy);
     if(tempCoordx > 0 || tempCoordy >0){
     var color = document.getElementById("chooseColor").value;
     var ctx = canvas.getContext('2d');
@@ -161,7 +274,6 @@ function setColor(memory){
         ctx.clearRect((tempCoordx *50), (tempCoordy *50),50, 50);
         ctx.fillRect((tempCoordx *50), (tempCoordy *50),50, 50);
     }else{
-        console.log(colorMemory+"ici")
         addMemoryUndo("b", colorMemory);
         ctx.fillRect((tempCoordx *50), (tempCoordy *50),50, 50);
     }
@@ -172,39 +284,7 @@ function setColor(memory){
     
 
 }
-//je suis trop stupide a utiliser pour remettre la couleur précédente sur une case select et non pour la mémoire
-function recupColor(x, y){
-    var colorData = ctx.getImageData(((x*50)+10),((y*50)+10),10,10);
-    var zero = "0";
-    var colorRed = colorData.data[0];
-    if(colorRed< 100){
-        colorRed = zero.concat(colorRed);
-        if(colorRed<10){
-            colorRed = zero.concat(colorRed);
-        }
-    }
-    var colorGreen = colorData.data[1];
-    if(colorGreen< 100){
-        colorGreen = zero.concat(colorGreen);
-        if(colorGreen<10){
-            colorGreen = zero.concat(colorGreen);
-        }
-    }
-    var colorBlue = colorData.data[2];
-    if(colorBlue< 100){
-        colorBlue = zero.concat(colorBlue);
-        if(colorBlue<10){
-            colorBlue = zero.concat(colorBlue);
-        }
-    }
-    colorMemory = colorRed.toString().concat(colorGreen.toString() ,colorBlue.toString());
-    if(colorMemory == "000000000"){
-        colorMemory = 255255255;
-    }
-    console.log("test +" + colorRed);
-    
-    
-}
+
 //AJOUT DES VALEURS DE BASE DANS LA GRILLE
 function setBaseValue(){
     var element = document.getElementById("sudoku");
@@ -233,7 +313,7 @@ function setBaseValue(){
     }
 }
 
-//FONCTION RECUP DES COORDONNE + SELCTION DE LA CASE 
+//FONCTION DE RECUPERATION DES COORDONNEE + SELCTION DE LA CASE
 function showCoords(event) {
     var x = event.pageX;
     var y = event.pageY;
@@ -244,11 +324,12 @@ function showCoords(event) {
             drawSelectCase(x, y);
         }
     }
+    // VERIFIE LES VALEURS DE BASE DE LA GRILLE
     function checkExcluded(excluded){
         return excluded == x.toString().concat(y);
     }
-  }
-//DEPLACEMENT FLECHE CLAVIER
+}
+//GESTION INPUT CLAVIER
 function checkKey(e){
     if(tempCoordx != null){
         var x, y;
@@ -307,7 +388,7 @@ function checkKey(e){
     
 }
 
-
+// COLORIE LA CASE SELECTIONNEE + RECUPERATION COORDONEE
 function drawSelectCase(x, y){
     var ctx = canvas.getContext('2d');
     ctx.beginPath();
@@ -322,9 +403,7 @@ function drawSelectCase(x, y){
     tempCoordy =y;
 }
 
-
-
-//AJOUT D UN NOMBRE DANS LA GRILLE
+//AJOUT D'UN NOMBRE DANS LA GRILLE
 function setNumber(num, memory){
     if (memory == true) {
         addMemoryUndo("a", tabLine[tempCoordx+tempCoordy*9]);
@@ -336,7 +415,7 @@ function setNumber(num, memory){
     hideHint();
     
 }
-//EFFACER UN NOMBRE DE LA GRILLE
+//EFFACER LES VALEURS D'UNE CASE DE LA GRILLE
 function clearSelectedCase(){
     setNumber(".");
     for (var i = 0; i < 9; i++) {
@@ -344,6 +423,8 @@ function clearSelectedCase(){
         
     }
 }
+
+//AFFICHE LE NOMBRE + VERIFICATION DES REGLES + MISE EN COULEUR (VERT OU ROUGE)
 function showUpdate(num){
     var nbCase = "c";
     nbCase = nbCase.concat(tempCoordx);
@@ -359,7 +440,7 @@ function showUpdate(num){
     }
 }
 
-//FONCTION DE CREATION ET DE MAJ DES DIFF TAB
+//FONCTION DE CREATION ET DE MAJ DES DIFFERENT TABLEAU (Lignes, colonnes et block)
 function createTabLine(){
     tabExcluded.length = 0;
     var cpt = 0;
@@ -374,7 +455,11 @@ function createTabLine(){
         }
     }
 }
-  function createTabCol(){
+
+// CREATION DE LA COLONNE
+// La création de la ligne est créé automatiquement
+// La création du block est géré dans l'update
+function createTabCol(){
     var cpt = null;
     for (var i = 0; i < 9; i++) {
         for (var j = 0; j < 9; j++) {
@@ -408,7 +493,7 @@ function updateTabBloc(){
         }   
     }
 }
-//FONCTIONS DE VERIFICATION 
+//FONCTIONS DE VERIFICATION GENERALE
 function verifValue(){
     var test = verifLine()+ verifCol()+ verifBloc();
     if(knight == 1){
@@ -420,48 +505,9 @@ function verifValue(){
     if(noSeq == 1){
         test = test + verifNoSeq();
     }
-    //console.log(verifLine());
-    //console.log(verifCol());
-    //console.log(verifBloc());
-    /*console.log(verifKnight());
-    console.log(verifNoSeq());*/
     return test;
 }
-
-function verif(num){
-    var tabTemp = new Array();
-    var startValue;
-    var value;
-    var verify = 0;
-    if (num == 0) {
-        value = tempCoordx+tempCoordy*9;
-        startValue = value-value%9;
-        tabTemp = tabLine;
-    }else if(num ==1){
-        value = tempCoordx*9+tempCoordy;
-        startValue = value-value%9;
-        tabTemp = tabCol;
-    }else if(num == 2){
-        value = (27*(Math.floor(tempCoordy/3))) + (9*(Math.floor(tempCoordx/3))) + ((tempCoordy%3)*3);
-        if(tempCoordx%3 != 0){
-            value = value + tempCoordx%3;
-        }
-       startValue = value - value%9;
-       tabTemp = tabBloc;
-       
-    }
-    for (var i = 0; i < 9; i++) {
-        if (tabTemp[startValue+i]==tabTemp[value]) {
-            verify++;
-            
-        }
-     }
-     
-     if (verify == 1) {
-         return 1;
-     }
-     return 0;           
-}
+// FUNCTION DE VERIFICATION PAR LIGNE, COLONNE OU BLOCK
 function verifLine(){
     var num = 0;
     return verif(num);
@@ -476,6 +522,42 @@ function verifBloc(){
     var num = 2;
     return verif(num);
 }
+
+// FUNCTION DE VERIFICATION APPELEE PAR LES LIGNES, COLONNES ET BLOCKS
+function verif(num){
+    var tabTemp = new Array();
+    var startValue;
+    var value;
+    var verify = 0;
+
+    if (num == 0) { // LIGNES
+        value = tempCoordx+tempCoordy*9;
+        startValue = value-value%9;
+        tabTemp = tabLine;
+    }else if(num ==1){  // COLONNE
+        value = tempCoordx*9+tempCoordy;
+        startValue = value-value%9;
+        tabTemp = tabCol;
+    }else if(num == 2){ // BLOCKS
+        value = (27*(Math.floor(tempCoordy/3))) + (9*(Math.floor(tempCoordx/3))) + ((tempCoordy%3)*3);
+        if(tempCoordx%3 != 0){
+            value = value + tempCoordx%3;
+        }
+       startValue = value - value%9;
+       tabTemp = tabBloc;
+    }
+    for (var i = 0; i < 9; i++) {
+        if (tabTemp[startValue+i]==tabTemp[value]) {
+            verify++;
+        }
+     }
+     if (verify == 1) {
+         return 1;
+     }
+     return 0;           
+}
+
+// VERIFICATION DES REGLES DU ROI
 function verifKing(){
     var value = tempCoordx+tempCoordy*9;
     var verify = 0;
@@ -496,13 +578,10 @@ function verifKing(){
         if(tempCoordx < 1){
             j++;
         }
-        
         for (j; j < (3+cptj); j++) {
             if(tabLine[value] == (tabLine[value-10+(9*i)+j])){
-                
                 verify++;
-            }     
-            
+            }
         }
     }
     if (verify == 1) {
@@ -510,6 +589,8 @@ function verifKing(){
     }
     return 0;
 }
+
+// VERIFICATION DE LA REGLE DU CHEVALIER
 function verifKnight(){
     var verify = 0;
     var value = tempCoordx+tempCoordy*9;
@@ -529,8 +610,7 @@ function verifKnight(){
         verify = verify + equalsKnight(tabLine[value], tabLine[value+7]);
     }
     if (tempCoordx<8 && tempCoordy<7 ) {
-        //à trouver c'est quelle case 
-        verify = verify + equalsKnight(tabLine[value], tabLine[value+7]);
+        verify = verify + equalsKnight(tabLine[value], tabLine[value+11]);
     }
     if(tempCoordx<7 && tempCoordy>0){
         verify = verify + equalsKnight(tabLine[value], tabLine[value+17]);
@@ -538,20 +618,19 @@ function verifKnight(){
     if(tempCoordx<7 && tempCoordy<8){
         verify = verify + equalsKnight(tabLine[value], tabLine[value+19]);
     }
-    //console.log(verify);
     if (verify == 0) {
         return 1;
     }
     return 0;
 }
 function equalsKnight(nbr1, nbr2){
-    //console.log(nbr1);
-    //console.log(nbr2);
     if(nbr1 == nbr2){
         return 1;
     }
     return 0;
 }
+
+// VERIFICATION DE LA REGLE NON SEQUENCIELLE
 function verifNoSeq(){
     var i = 0;
     var j =0;
@@ -568,7 +647,6 @@ function verifNoSeq(){
     for (i; i < 2+cpti; i++) {
         if(tabLine[valueLine] == (parseInt(tabLine[valueLine+i*2-1])-1) || tabLine[valueLine] == (parseInt(tabLine[valueLine+i*2-1])+1)){
             verify++;
-            
         }
     }
     if (tempCoordy < 1) {
@@ -587,16 +665,17 @@ function verifNoSeq(){
     return 0;
 
 }
+
+// AJOUT DE LA DERNIERE ACTION A LA MEMOIRE
 function addMemoryUndo(fct, value){
     fct = fct.concat(tempCoordx).concat(tempCoordy).concat(value);
     for (var i = 0; i < 4; i++) {
         tabMemoryUndo[4-i] = tabMemoryUndo[4-i-1];
-        console.log(tabMemoryUndo[i]);
     }
-    console.log(fct);
     tabMemoryUndo[0]= fct;
 }
 
+// GESTION DU UNDO
 function undo(){
     ctx.clearRect((tempCoordx *50), (tempCoordy *50),50, 50);
     ctx.strokeRect((tempCoordx *50), (tempCoordy *50),50, 50);
@@ -610,39 +689,36 @@ function undo(){
             return 0;
         }
     }
-    addMemoryRedo(undoValue);
+
+    //addMemoryRedo(undoValue);
     for (var i = 0; i < 4; i++) {
         tabMemoryUndo[i] = tabMemoryUndo[i+1];
         
     }
     var testSwitch = undoValue.charAt(0);
     switch(testSwitch){
+        // set number stockée sous 4 caractère
         case 'a':
-            console.log("test nbr");
             tempCoordx = undoValue.charAt(1);
             
             tempCoordy = undoValue.charAt(2);
             var value = undoValue.charAt(3)
-            console.log(tempCoordx +" "+ tempCoordy + " "+ value );
 
             setNumber(value, false);
             break;
+        // changer la couleur
         case 'b':
             tempCoordx = undoValue.charAt(1);
             tempCoordy = undoValue.charAt(2);
             rgb = undoValue.substr(3,9);
-            console.log("rgb: "+rgb);
             setColor(rgb);
-            break;
-        case 'c':
-            tempCoordx = undoValue.charAt(1);
-            tempCoordy = undoValue.charAt(2);
-
             break;
     }
     tempCoordx = -1000;
     tempCoordy = -1000;
 }
+
+// function non gérée et non utilisée
 function addMemoryRedo(tempUndo){
     for (var i = 0; i < 5; i++) {
         tabMemoryRedo[i] = tabMemoryRedo[i+1];
@@ -650,7 +726,7 @@ function addMemoryRedo(tempUndo){
     tabMemoryRedo[0]= tempUndo;
 }
 
-
+// CREATION DU HINT (aide qui affiche toutes les positibilités de la case)
 function createHint(){
     var element = document.getElementById("sudoku");
     for (var i = 0; i <9;i++) {
@@ -659,7 +735,6 @@ function createHint(){
               for (var l = 0; l < 3; l++) {
                 var kl = 3*k+l;
                 var h = "h"+i+j+kl;
-                console.log(h);
                 var tag = document.createElement("div");
                 tag.setAttribute("id", h);
                 tag.classList.add(h);
@@ -671,15 +746,10 @@ function createHint(){
                 tag.style.left = 15+((taille/9*j+(l*15)))+ 'px'; 
                 tag.style.top = 12 +((taille/9*i+(k*15)))+ 'px';
                 document.getElementById(h).innerHTML = 3*k+l+1;
-                
               }
-            
           }
         }
       }
-      /*document.getElementById("h204").style.display= "block";
-      document.getElementById("h205").style.display= "block";
-      document.getElementById("h405").style.display= "block";*/
       for (var m = 0; m < 9; m++) {
         for (var n = 0; n < 9; n++) {
             for (var o = 0; o < 9; o++) {
@@ -688,48 +758,11 @@ function createHint(){
         }
     }
 }
-var tabHinted = new Array(9);
-for (var j = 0; j < 9; j++) {
-    tabHinted = new Array(9);
-}
 
+// EFFACE LES VALEURS DE LA CASE ET AFFICHE LES HINTS
 function hint(){
-    var hintCase=0;
-    /*
-    for (var i = 0; i < 9; i++) {
-        for (var j = 0; j < 9; j++) {
-            for (var k = 0; k < 9; k++) {
-                //console.log("*"+tabHint[i][j][k]+"*");
-                if(tabHint[i][j][k] != 0){
-                    hintCase = "h";
-                    hintCase = hintCase.concat(i.toString()).concat(j.toString()).concat(k.toString());
-                    //console.log(tabHint[tempCoordx][tempCoordy][k]);
-                    console.log("chatte");
-                    document.getElementById(hintCase).style.display="block";
-                }
-            }
-        }
-    }/**/
     clearSelectedCase();
     showHint();
-    //tabHinted[tempCoordx][tempCoordy] = 1;
-
-}
-function reUpHint(){
-    var x = tempCoordx;
-    var y = tempCoordy;
-    for (var i = 0; i < 9; i++) {
-        for (var j = 0; j < 9; j++) {
-            console.log(tabHinted[i][j]);
-            if(tabHinted[i][j] == 1){
-                tempCoordx = j;
-                tempCoordy = i;
-                showHint();
-            }
-        }
-    }
-    tempCoordx = x;
-    tempCoordy =y;
 }
 function showHint(){
     setNumber(".", false);
@@ -740,14 +773,14 @@ function showHint(){
         if(tabHint[tempCoordy][tempCoordx][k] != 0){
             document.getElementById(hintCase).style.display="block";
         }
-
     }
 }
+
+// MAJ DES HINTS LORSQUE L'UTILISATEUR MET UN NOMBRE
 function updateHint(){
     var x = tempCoordx;
     var y = tempCoordy;
     var value;
-    var cpt=0;
     for (var i = 0; i < 9; i++) {
         for (var j = 0; j < 9; j++) {
             tempCoordx = j;
@@ -756,7 +789,6 @@ function updateHint(){
             for (var k = 0; k < 9; k++) {
                 updateTab(k+1);
                 if(verifValue() == (3+king+knight+noSeq)){
-                    console.log("h"+i+j+k);
                     tabHint[i][j][k] = k+1;
                     }else{
                         tabHint[i][j][k] = 0;
@@ -769,6 +801,7 @@ function updateHint(){
     tempCoordy =y;
 }
 
+// CACHE LES HINTS
 function hideHint(){
     for (var k = 0; k < 9; k++) {
         hintCase = "h";
@@ -777,8 +810,7 @@ function hideHint(){
         }
 }
 
-var swapNPM = true;
-hide("divPM");
+// CHANGE L'AFFICHAGE DES BOUTONS NORMAUX A PENCIL MARK
 function swapPencilMark(){
     if (swapNPM==true) {
         hide("divNumber");
@@ -797,6 +829,7 @@ function show(div){
     document.getElementById(div).style.display="block";
 }
 
+// CREATION DU PENCIL MARK
 function createPM(){
     var element = document.getElementById("sudoku");
     for (var i = 0; i <9;i++) {
@@ -823,11 +856,11 @@ function createPM(){
     }
 }
 
+// AFFICHE LE PENCIL MARK DANS LA CASE
 function setPM(nbr){
     nbr--;
     pmCase = "p";
     pmCase = pmCase.concat(tempCoordy.toString()).concat(tempCoordx.toString()).concat(nbr.toString());
-    console.log(pmCase);
     if(document.getElementById(pmCase).style.display=="block"){
         clearPM(nbr);
     }else{
@@ -836,13 +869,14 @@ function setPM(nbr){
     
 }
 
+// SUPPRIME LE PENCIL MARK LORSQUE L'ON RECLIQUE SUR LE NOMBRE
 function clearPM(nbr){
     pmCase = "p";
     pmCase = pmCase.concat(tempCoordy.toString()).concat(tempCoordx.toString()).concat(nbr.toString());
-    console.log(pmCase);
     document.getElementById(pmCase).style.display="none";
 }
 
+// VERIFIE QUE LA GRILLE SOIT COMPLETE SANS ERREURS
 function validate(){
     var x = tempCoordx;
     var y = tempCoordy;
@@ -857,9 +891,9 @@ function validate(){
         } 
     }
     if(verif==0){
-        alert("c'est win");
+        finish();
     }else{
-        alert("le sudoku n'est pas correct");
+        alert("Le sudoku n'est pas correct");
         tempCoordx =x;
         tempCoordy =y;
     } 

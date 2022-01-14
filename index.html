@@ -7,6 +7,18 @@
     <title>Document</title>
 </head>
 <body>
+    <div id="connexion" style="text-align: center; margin: auto; padding: 150px 0">
+        <h1>Bienvenue sur le sudoku Veltri-Vansnick</h1>
+        <p style="padding-left: 53px"> Nom <input type="text" id="name"> </p>
+        <p> Mot de passe <input type="password" id="password"></p>
+        <button id="login" onclick="login()">Connexion</button>
+    </div>
+    <div id="rejouer" style="text-align: center; margin: auto; padding: 150px 0">
+        <p>Félicitations !!! Vous avez résolu la grille.</p>
+        <p>Voulez-vous rejouer encore ? </p>
+        <button onclick="rejouer()">Rejouer</button>
+        <button onclick="retour()">Retour à la page d'accueil</button>
+    </div>
     <div id="sudoku">
         <canvas id="canvas" ></canvas>
         <div id="divNumber">
@@ -39,7 +51,7 @@
         <button type="button" onclick="clearSelectedCase()" style="position: absolute; top: 220px; left: 570px;" >EFFACER</button>
         <button type="button" id="undo" onclick="undo()" style="position: absolute; top: 260px; left: 500px;" >UNDO</button>
         <button type="button" id="redo" onclick="redo()" style="position: absolute; top: 260px; left: 570px;">REDO</button>
-        <button type="button" id="valider" onclick="validate()" style="position: absolute; top: 300px; left: 500px;">VALIDER</button>
+        <button type="button" id="valider" onclick="validate()" style="position: absolute; top: 300px; left: 500px;">VALIDER LA GRILLE</button>
         <ul id = "rule" style="position:absolute; top: 500px; left: 10px;">Règle(s) utilisée(s):
             <li id="knight"></li>
             <li id="king"></li>
