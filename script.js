@@ -1,27 +1,48 @@
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 // DECLARATION DE VARIABLE
+//DECLARATION POUR LE CANVAS
 var taille = 450;
 canvas.width = taille;
 canvas.height = taille;
+var hintBool = 0;
 var nbr = 1;
-var lettre = "c";
+var vartre = "c";
+//DECLARATION POUR LES ENTREE CLAVIER
 document.onkeydown = checkKey;
+//DECLARATION POUR LES REGLES SPECIALES
 var knight = 0;
 var king = 0;
 var noSeq = 0;
-
+//DECALARATION TAB MEMOIRE POUR UNDO/REDO
+var tabMemoryUndo = new Array();
+tabMemoryUndo = [null, null, null, null, null];
+var tabMemoryRedo = new Array();
+tabMemoryRedo = [null, null, null, null, null];
+var colorMemory;
 var s;
-var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7, 1, 0, 0";
-let tempCoordx = null;
-let tempCoordy = null;
-let tabBloc = new Array();
-let tabCol = new Array();
-let tabLine = new Array();
+var sudoku = "7.4..6..9.8..1......3.2.45.........2.56...78.1.........25.3.1......4..6.9..5..3.7, 0, 0, 0";
+var tempCoordx = null;
+var tempCoordy = null;
+//DECLARATION DIFFERENT TABLEAU 
+var tabBloc = new Array();
+var tabCol = new Array();
+var tabLine = new Array();
 var tabExcluded = new Array();
 //AJOUT EVENT SUR ELEMENT HTML
 var c = document.getElementById("canvas");
 c.onclick = showCoords;
+var tabHint = new Array(9);
+for (var i = 0; i < 9; i++) {
+    tabHint[i] = new Array(9);
+    for (var j = 0; j < 9; j++) {
+        tabHint[i][j] = new Array(9);
+    }
+}
+
+
+
+
 
 //RECUPERATION GRILLE
 function getGrilles(nbr){
@@ -49,12 +70,17 @@ function getGrilles(nbr){
 Init();
 
 function Init(){
+    
     drawSudoku();
+    createHint();
+    createPM();
     setBaseValue();
     //getBaseValue();
     createTabLine();
     updateTabBloc();
     createTabCol();
+    updateHint();
+
 }
 
 //VERIFICATION DES REGLES DE LA GRILLE
@@ -122,17 +148,62 @@ function drawSudoku(){
         ctx.stroke();
     }
 }
-function setColor(){
+function setColor(memory){
+    console.log(memory +"fuck" + tempCoordx +" "+ tempCoordy);
+    if(tempCoordx > 0 || tempCoordy >0){
     var color = document.getElementById("chooseColor").value;
-    console.log(color);
     var ctx = canvas.getContext('2d');
     ctx.beginPath();
     ctx.fillStyle = color;
     ctx.lineWidth =1.0;
-    ctx.fillRect((tempCoordx *50), (tempCoordy *50),50, 50);
+    if(memory != null){
+        ctx.fillStyle = 'rgb('+memory.substr(0,3)+','+memory.substr(3,3)+','+memory.substr(6,3)+')';
+        ctx.clearRect((tempCoordx *50), (tempCoordy *50),50, 50);
+        ctx.fillRect((tempCoordx *50), (tempCoordy *50),50, 50);
+    }else{
+        console.log(colorMemory+"ici")
+        addMemoryUndo("b", colorMemory);
+        ctx.fillRect((tempCoordx *50), (tempCoordy *50),50, 50);
+    }
+    
     tempCoordx = -1;
     tempCoordy =-1;
+}
+    
 
+}
+//je suis trop stupide a utiliser pour remettre la couleur précédente sur une case select et non pour la mémoire
+function recupColor(x, y){
+    var colorData = ctx.getImageData(((x*50)+10),((y*50)+10),10,10);
+    var zero = "0";
+    var colorRed = colorData.data[0];
+    if(colorRed< 100){
+        colorRed = zero.concat(colorRed);
+        if(colorRed<10){
+            colorRed = zero.concat(colorRed);
+        }
+    }
+    var colorGreen = colorData.data[1];
+    if(colorGreen< 100){
+        colorGreen = zero.concat(colorGreen);
+        if(colorGreen<10){
+            colorGreen = zero.concat(colorGreen);
+        }
+    }
+    var colorBlue = colorData.data[2];
+    if(colorBlue< 100){
+        colorBlue = zero.concat(colorBlue);
+        if(colorBlue<10){
+            colorBlue = zero.concat(colorBlue);
+        }
+    }
+    colorMemory = colorRed.toString().concat(colorGreen.toString() ,colorBlue.toString());
+    if(colorMemory == "000000000"){
+        colorMemory = 255255255;
+    }
+    console.log("test +" + colorRed);
+    
+    
 }
 //AJOUT DES VALEURS DE BASE DANS LA GRILLE
 function setBaseValue(){
@@ -168,18 +239,16 @@ function showCoords(event) {
     var y = event.pageY;
     x =Number.parseInt(((x-10)/50));
     y =Number.parseInt(((y-10)/50));
-    var coords = "X coords: " + x + ", Y coords: " + y;
     if(x<taille && y<taille){
         if((tabExcluded.find(checkExcluded)) == null){
             drawSelectCase(x, y);
-            
         }
     }
     function checkExcluded(excluded){
         return excluded == x.toString().concat(y);
     }
   }
-//DEPLACEMENT FLECHE CLAVIER (PERSPECTIVE D AMELIO: FAIRE UN SAUT DE CASE QUAND CASE LOCK)
+//DEPLACEMENT FLECHE CLAVIER
 function checkKey(e){
     if(tempCoordx != null){
         var x, y;
@@ -213,23 +282,23 @@ function checkKey(e){
                 drawSelectCase(x, y);
             }
         }else if(e.keyCode == '49'|| e.keyCode == '97'){
-           setNumber(1);
+           setNumber(1,true);
         }else if(e.keyCode == '50'|| e.keyCode == '98' ){
-            setNumber(2);
+            setNumber(2,true);
          }else if(e.keyCode == '51'|| e.keyCode == '99'){
-            setNumber(3);
+            setNumber(3,true);
          }else if(e.keyCode == '52'|| e.keyCode == '100'){
-            setNumber(4);
+            setNumber(4,true);
          }else if(e.keyCode == '53'|| e.keyCode == '101'){
-            setNumber(5);
+            setNumber(5,true);
          }else if(e.keyCode == '54'|| e.keyCode == '102'){
-            setNumber(6);
+            setNumber(6,true);
          }else if(e.keyCode == '55'|| e.keyCode == '103'){
-            setNumber(7);
+            setNumber(7,true);
          }else if(e.keyCode == '56'|| e.keyCode == '104'){
-            setNumber(8);
+            setNumber(8,true);
          }else if(e.keyCode == '57'|| e.keyCode == '105'){
-            setNumber(9);
+            setNumber(9,true);
          }
         function checkExcluded(excluded){
             return excluded == x.toString().concat(y);
@@ -242,13 +311,11 @@ function checkKey(e){
 function drawSelectCase(x, y){
     var ctx = canvas.getContext('2d');
     ctx.beginPath();
-    ctx.strokeStyle = "#1F9AC4";
     ctx.fillStyle = "#7FD3EF";
     ctx.lineWidth =1.0;
     ctx.fillRect((x *50), (y *50),50, 50);
     ctx.strokeRect((x *50), (y *50),50, 50);
     ctx.strokeStyle = "black";
-    ctx.fillStyle = null;
     ctx.clearRect((tempCoordx *50), (tempCoordy *50),50, 50);
     ctx.strokeRect((tempCoordx *50), (tempCoordy *50),50, 50);
     tempCoordx = x;
@@ -258,23 +325,32 @@ function drawSelectCase(x, y){
 
 
 //AJOUT D UN NOMBRE DANS LA GRILLE
-function setNumber(num){
+function setNumber(num, memory){
+    if (memory == true) {
+        addMemoryUndo("a", tabLine[tempCoordx+tempCoordy*9]);
+    }else{
+    }
     updateTab(num);
     showUpdate(num);
+    updateHint();
+    hideHint();
+    
 }
 //EFFACER UN NOMBRE DE LA GRILLE
 function clearSelectedCase(){
-    var nbCase = "c";
-    nbCase = nbCase.concat(tempCoordx);
-    nbCase = nbCase.concat(tempCoordy);
-    var cleared = "."
-    document.getElementById(nbCase).innerHTML = " ";
-    updateTab(cleared);
+    setNumber(".");
+    for (var i = 0; i < 9; i++) {
+        clearPM(i);
+        
+    }
 }
 function showUpdate(num){
     var nbCase = "c";
     nbCase = nbCase.concat(tempCoordx);
     nbCase = nbCase.concat(tempCoordy);
+    if(num=="."){
+        num = " "
+    }
     document.getElementById(nbCase).innerHTML = num;
     if(verifValue() == (3+king+knight+noSeq)){
     document.getElementById(nbCase).style.color="green";
@@ -288,7 +364,7 @@ function createTabLine(){
     tabExcluded.length = 0;
     var cpt = 0;
     var temp;
-    for (let i = 0; i < 81; i++) {  
+    for (var i = 0; i < 81; i++) {  
         tabLine[i]= sudoku.charAt(i);
         //TABLEAU STOCKANT LES CASES A BLOQUER POUR LE SELECTED
         if(sudoku.charAt(i)!= "."){
@@ -300,8 +376,8 @@ function createTabLine(){
 }
   function createTabCol(){
     var cpt = null;
-    for (let i = 0; i < 9; i++) {
-        for (let j = 0; j < 9; j++) {
+    for (var i = 0; i < 9; i++) {
+        for (var j = 0; j < 9; j++) {
             tabCol[cpt]= tabLine[i+j*9];
             cpt++;
         }
@@ -321,10 +397,10 @@ function updateTabCol(num){
 }
 function updateTabBloc(){
     var cpt =0;
-    for (let l = 0; l < 3; l++) {
-        for (let k = 0; k < 3; k++) {
-            for (let j = 0; j < 3; j++) {
-                for (let i = 0; i < 3; i++) {
+    for (var l = 0; l < 3; l++) {
+        for (var k = 0; k < 3; k++) {
+            for (var j = 0; j < 3; j++) {
+                for (var i = 0; i < 3; i++) {
                     tabBloc[cpt] = tabLine[i+j*9+k*3+l*27];
                     cpt++;
                 }
@@ -344,11 +420,11 @@ function verifValue(){
     if(noSeq == 1){
         test = test + verifNoSeq();
     }
-    console.log(verifLine());
-    console.log(verifCol());
-    console.log(verifBloc());
-    console.log(verifKnight());
-    //console.log(verifNoSeq());
+    //console.log(verifLine());
+    //console.log(verifCol());
+    //console.log(verifBloc());
+    /*console.log(verifKnight());
+    console.log(verifNoSeq());*/
     return test;
 }
 
@@ -374,7 +450,7 @@ function verif(num){
        tabTemp = tabBloc;
        
     }
-    for (let i = 0; i < 9; i++) {
+    for (var i = 0; i < 9; i++) {
         if (tabTemp[startValue+i]==tabTemp[value]) {
             verify++;
             
@@ -403,10 +479,10 @@ function verifBloc(){
 function verifKing(){
     var value = tempCoordx+tempCoordy*9;
     var verify = 0;
-    let i=0;
-    let j=0;
-    let cpti = 0;
-    let cptj = 0;
+    var i=0;
+    var j=0;
+    var cpti = 0;
+    var cptj = 0;
     if (tempCoordy < 1) {
         i++;
     }else if(tempCoordy > 7){
@@ -477,10 +553,10 @@ function equalsKnight(nbr1, nbr2){
     return 0;
 }
 function verifNoSeq(){
-    let i = 0;
-    let j =0;
-    let cpti = 0;
-    let cptj = 0;
+    var i = 0;
+    var j =0;
+    var cpti = 0;
+    var cptj = 0;
     var valueLine = tempCoordx+tempCoordy*9;
     var valueCol = tempCoordx*9+tempCoordy;
     var verify = 0;
@@ -510,4 +586,281 @@ function verifNoSeq(){
     }
     return 0;
 
+}
+function addMemoryUndo(fct, value){
+    fct = fct.concat(tempCoordx).concat(tempCoordy).concat(value);
+    for (var i = 0; i < 4; i++) {
+        tabMemoryUndo[4-i] = tabMemoryUndo[4-i-1];
+        console.log(tabMemoryUndo[i]);
+    }
+    console.log(fct);
+    tabMemoryUndo[0]= fct;
+}
+
+function undo(){
+    ctx.clearRect((tempCoordx *50), (tempCoordy *50),50, 50);
+    ctx.strokeRect((tempCoordx *50), (tempCoordy *50),50, 50);
+    var undoValue =null;
+    var cpt = 0;
+    var rgb;
+    while(undoValue == null){
+        undoValue = tabMemoryUndo[cpt];
+        cpt++;
+        if (cpt>5) {
+            return 0;
+        }
+    }
+    addMemoryRedo(undoValue);
+    for (var i = 0; i < 4; i++) {
+        tabMemoryUndo[i] = tabMemoryUndo[i+1];
+        
+    }
+    var testSwitch = undoValue.charAt(0);
+    switch(testSwitch){
+        case 'a':
+            console.log("test nbr");
+            tempCoordx = undoValue.charAt(1);
+            
+            tempCoordy = undoValue.charAt(2);
+            var value = undoValue.charAt(3)
+            console.log(tempCoordx +" "+ tempCoordy + " "+ value );
+
+            setNumber(value, false);
+            break;
+        case 'b':
+            tempCoordx = undoValue.charAt(1);
+            tempCoordy = undoValue.charAt(2);
+            rgb = undoValue.substr(3,9);
+            console.log("rgb: "+rgb);
+            setColor(rgb);
+            break;
+        case 'c':
+            tempCoordx = undoValue.charAt(1);
+            tempCoordy = undoValue.charAt(2);
+
+            break;
+    }
+    tempCoordx = -1000;
+    tempCoordy = -1000;
+}
+function addMemoryRedo(tempUndo){
+    for (var i = 0; i < 5; i++) {
+        tabMemoryRedo[i] = tabMemoryRedo[i+1];
+    }
+    tabMemoryRedo[0]= tempUndo;
+}
+
+
+function createHint(){
+    var element = document.getElementById("sudoku");
+    for (var i = 0; i <9;i++) {
+        for (var j = 0; j <9;j++) {
+          for(var k = 0; k <3;k++) {
+              for (var l = 0; l < 3; l++) {
+                var kl = 3*k+l;
+                var h = "h"+i+j+kl;
+                console.log(h);
+                var tag = document.createElement("div");
+                tag.setAttribute("id", h);
+                tag.classList.add(h);
+                element.appendChild(tag);
+                tag.style.fontSize = 10 + 'px';
+                tag.style.position = "absolute";
+                tag.style.color="green";
+                tag.style.display="none";
+                tag.style.left = 15+((taille/9*j+(l*15)))+ 'px'; 
+                tag.style.top = 12 +((taille/9*i+(k*15)))+ 'px';
+                document.getElementById(h).innerHTML = 3*k+l+1;
+                
+              }
+            
+          }
+        }
+      }
+      /*document.getElementById("h204").style.display= "block";
+      document.getElementById("h205").style.display= "block";
+      document.getElementById("h405").style.display= "block";*/
+      for (var m = 0; m < 9; m++) {
+        for (var n = 0; n < 9; n++) {
+            for (var o = 0; o < 9; o++) {
+                tabHint[m][n][o] = o;
+            }
+        }
+    }
+}
+var tabHinted = new Array(9);
+for (var j = 0; j < 9; j++) {
+    tabHinted = new Array(9);
+}
+
+function hint(){
+    var hintCase=0;
+    /*
+    for (var i = 0; i < 9; i++) {
+        for (var j = 0; j < 9; j++) {
+            for (var k = 0; k < 9; k++) {
+                //console.log("*"+tabHint[i][j][k]+"*");
+                if(tabHint[i][j][k] != 0){
+                    hintCase = "h";
+                    hintCase = hintCase.concat(i.toString()).concat(j.toString()).concat(k.toString());
+                    //console.log(tabHint[tempCoordx][tempCoordy][k]);
+                    console.log("chatte");
+                    document.getElementById(hintCase).style.display="block";
+                }
+            }
+        }
+    }/**/
+    clearSelectedCase();
+    showHint();
+    //tabHinted[tempCoordx][tempCoordy] = 1;
+
+}
+function reUpHint(){
+    var x = tempCoordx;
+    var y = tempCoordy;
+    for (var i = 0; i < 9; i++) {
+        for (var j = 0; j < 9; j++) {
+            console.log(tabHinted[i][j]);
+            if(tabHinted[i][j] == 1){
+                tempCoordx = j;
+                tempCoordy = i;
+                showHint();
+            }
+        }
+    }
+    tempCoordx = x;
+    tempCoordy =y;
+}
+function showHint(){
+    setNumber(".", false);
+    for (var k = 0; k < 9; k++) {
+        hintCase = "h";
+        hintCase = hintCase.concat(tempCoordy.toString()).concat(tempCoordx.toString()).concat(k.toString());
+        document.getElementById(hintCase).style.display="none";
+        if(tabHint[tempCoordy][tempCoordx][k] != 0){
+            document.getElementById(hintCase).style.display="block";
+        }
+
+    }
+}
+function updateHint(){
+    var x = tempCoordx;
+    var y = tempCoordy;
+    var value;
+    var cpt=0;
+    for (var i = 0; i < 9; i++) {
+        for (var j = 0; j < 9; j++) {
+            tempCoordx = j;
+            tempCoordy = i;
+            value = tabLine[i*9+j];
+            for (var k = 0; k < 9; k++) {
+                updateTab(k+1);
+                if(verifValue() == (3+king+knight+noSeq)){
+                    console.log("h"+i+j+k);
+                    tabHint[i][j][k] = k+1;
+                    }else{
+                        tabHint[i][j][k] = 0;
+                }
+            }
+            updateTab(value);
+        }
+    }
+    tempCoordx = x;
+    tempCoordy =y;
+}
+
+function hideHint(){
+    for (var k = 0; k < 9; k++) {
+        hintCase = "h";
+        hintCase = hintCase.concat(tempCoordy.toString()).concat(tempCoordx.toString()).concat(k.toString());
+        document.getElementById(hintCase).style.display="none";
+        }
+}
+
+var swapNPM = true;
+hide("divPM");
+function swapPencilMark(){
+    if (swapNPM==true) {
+        hide("divNumber");
+        show("divPM");
+        swapNPM = false;
+    } else {
+        hide("divPM");
+        show("divNumber");
+        swapNPM = true;
+    }
+}
+function hide(div){
+    document.getElementById(div).style.display="none";
+}
+function show(div){
+    document.getElementById(div).style.display="block";
+}
+
+function createPM(){
+    var element = document.getElementById("sudoku");
+    for (var i = 0; i <9;i++) {
+        for (var j = 0; j <9;j++) {
+          for(var k = 0; k <3;k++) {
+              for (var l = 0; l < 3; l++) {
+                var kl = 3*k+l;
+                var p = "p"+i+j+kl;
+                var tag = document.createElement("div");
+                tag.setAttribute("id", p);
+                tag.classList.add(p);
+                element.appendChild(tag);
+                tag.style.fontSize = 10 + 'px';
+                tag.style.position = "absolute";
+                tag.style.display="none";
+                tag.style.color="blue";
+                tag.style.left = 15+((taille/9*j+(l*15)))+ 'px'; 
+                tag.style.top = 12 +((taille/9*i+(k*15)))+ 'px';
+                document.getElementById(p).innerHTML = 3*k+l+1;
+            }
+            
+          }
+        }
+    }
+}
+
+function setPM(nbr){
+    nbr--;
+    pmCase = "p";
+    pmCase = pmCase.concat(tempCoordy.toString()).concat(tempCoordx.toString()).concat(nbr.toString());
+    console.log(pmCase);
+    if(document.getElementById(pmCase).style.display=="block"){
+        clearPM(nbr);
+    }else{
+        document.getElementById(pmCase).style.display="block";
+    }
+    
+}
+
+function clearPM(nbr){
+    pmCase = "p";
+    pmCase = pmCase.concat(tempCoordy.toString()).concat(tempCoordx.toString()).concat(nbr.toString());
+    console.log(pmCase);
+    document.getElementById(pmCase).style.display="none";
+}
+
+function validate(){
+    var x = tempCoordx;
+    var y = tempCoordy;
+    var verif=0;
+    for (var i = 0; i < 9; i++) {
+        for (var j = 0; j < 9; j++) {
+            tempCoordx = i;
+            tempCoordy =j;
+            if(verifValue() != (3+king+knight+noSeq)){
+               verif++;
+            }
+        } 
+    }
+    if(verif==0){
+        alert("c'est win");
+    }else{
+        alert("le sudoku n'est pas correct");
+        tempCoordx =x;
+        tempCoordy =y;
+    } 
 }
